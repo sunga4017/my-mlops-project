@@ -1,15 +1,13 @@
 # 1일차: Python 문법 복습 및 Numpy 기초 학습. GitHub 계정 생성 및 Git 기본 명령어 숙달.
 
 ## 1. 학습 목표
-* Python 핵심 문법(List, Dict, def, class) 복습.
+* Python 문법 복습.
 * `Numpy` 라이브러리 설치 및 `ndarray` 배열 연산 숙달.
 * `Git` 설치, `GitHub` 저장소 생성 및 `push`까지의 기본 명령어 숙달.
 * `.gitignore`를 이용한 불필요 파일(폴더) 관리 적용.
 
-## 2. Python 핵심 문법
-* **자료구조:** `List`, `Dictionary` (API JSON 데이터 처리 기반).
-* **함수 (def):** 코드 재사용을 위한 `def` 정의.
-* **클래스 (class):** `PyTorch`, `FastAPI`의 기본 구조 (`__init__`, 메서드) 파악.
+## 2. Python 문법
+* **정보처리기 실기 교재**를 통해 복습 완료.
 
 ## 3. Numpy 기초
 * **설치:** PyCharm 터미널에서 `pip install numpy` 실행.
