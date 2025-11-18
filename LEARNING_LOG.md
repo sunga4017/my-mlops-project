@@ -125,3 +125,42 @@
         # 추론 실행 (모델과 데이터가 모두 GPU에 있음)
         output = model(input_tensor)
     `````
+
+# 3일차: PyTorch Pre-trained 모델 로드 및 추론(Inference) 실습
+
+## 1. 학습 목표
+* `torchvision` 라이브러리의 기능 및 구성 요소(models, transforms) 이해.
+* **추론(Inference)** 실행 시 필수적인 `model.eval()`과 `torch.no_grad()`의 역할 및 차이 숙달.
+* `weights` 파라미터를 사용한 최신 표준 모델 로드 방식(`ResNet18_Weights.DEFAULT`) 적용.
+* **텐서 배치(Batch)** 처리 개념을 이해하고, `torch.stack()` 및 `argmax(dim=1)`을 이용한 벡터화 처리 방식 숙달.
+
+## 2. PyTorch 추론(Inference) 기본 구성
+
+* **라이브러리 역할:**
+    * `torchvision`: PyTorch의 공식 CV(컴퓨터 비전) 도구 키트. (AI 모델, 이미지 변환 기능 제공)
+    * `PIL (Pillow)`: 이미지 파일을 불러오고 저장하는 '파일 입출력' 담당.
+* **모델 로드 표준:**
+    * `pretrained=True`는 구식이며, **`weights=ResNet18_Weights.DEFAULT`**처럼 명확하게 '가중치 버전'을 지정하는 것이 표준. (`.DEFAULT`는 현재 가장 좋은 성능의 가중치를 의미)
+* **'호출 가능한 객체'의 이해:**
+    * `preprocess = transforms.Compose([...])`처럼 변수에 저장되지만, `preprocess(img)` 형태로 함수처럼 호출할 수 있는 객체를 **'Callable Object'**라고 함.
+
+## 3. 추론(Inference) 환경 설정 및 최적화
+
+* **장치 설정 (표준화):**
+    * `device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')` 구문을 사용하여 GPU 사용 가능 여부를 자동 판별하고 `device` 변수에 할당.
+* **데이터 및 모델 이동 (`.to(device)` 동작 원리):**
+    * **모델:** `model.to(device)`는 모델 **자체**와 모든 내부 파라미터가 이동하는 **'In-place(제자리 변경)'** 방식. (재할당 불필요)
+    * **텐서:** `input_batch.to(device)`는 지정된 장치에 **새로운 복사본을 만들고** 반환하는 **'Out-of-place'** 방식. 따라서 `input_batch = ...` 재할당이 필수.
+* **추론 최적화 (MLOps 표준):**
+    * `model.eval()`: 모델 내부의 Dropout, BatchNorm 통계를 고정하여 **추론 결과의 일관성**을 확보.
+    * `with torch.no_grad():`: 불필요한 **'자동 미분 추적(기울기 계산)'** 기능을 끄는 컨텍스트 관리자. 메모리 사용을 줄이고 **속도를 극대화**함.
+
+## 4. 데이터 배치 처리 및 벡터화
+
+* **단일 텐서 → 배치 텐서 변환:**
+    * `input_tensor.unsqueeze(0)`: 3차원(`[C, H, W]`)에 0번째 위치에 **배치 크기 1**을 추가하여 4차원(`[1, C, H, W]`)으로 만듦.
+* **이미지 2장 이상 배치 처리:**
+    * **`torch.stack([tensor1, tensor2])`** 함수를 사용하여 여러 개의 3D 텐서를 새로운 배치 차원(dim=0)을 기준으로 쌓아 4차원(`[2, C, H, W]`) 텐서를 만듦. (일반적인 자료구조 Stack과는 다름)
+* **결과 처리 (Vectorization):**
+    * `argmax(dim=1)`: 파이썬 `for` 루프 없이 **텐서 전체를 병렬 처리**하는 벡터화 방식.
+    * `output.argmax(dim=1)`는 `[2, 1000]` 모양의 텐서에서 각 **행(사진)**의 1000개 **열(클래스)**을 훑어 가장 높은 점수의 인덱스를 두 개(`tensor([idx1, idx2])`) 한 번에 반환. (가장 효율적인 방식)
